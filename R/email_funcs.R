@@ -199,11 +199,10 @@ gen_plot_title <- function(df,
     slice(1) %>%
     ungroup()
   
+  pre_title <- "Hydrological Forecast"
   
   if (nrow(basin_first_breach) == 0) {
-    ret <- glue(
-      "{date_forecast_gen}: No Warning issued"
-    )
+    ret <- pre_title
   } else {
     basin_vec_syled <- basin_first_breach %>%
       mutate(
@@ -215,13 +214,13 @@ gen_plot_title <- function(df,
     # more than 1 basin we need plural
     if (length(basin_vec_syled) > 1) {
       ret <- glue(
-        "{date_forecast_gen}: Flood warning issued for the {glue_collapse(basin_vec_syled,sep=',',last='&')} Basins in Nigeria"
+        "{pre_title}: Flood warning issued for the {glue_collapse(basin_vec_syled,sep=',',last='&')} Basins in Nigeria"
       )
     }
     # 1 basin singular
     if (length(basin_vec_syled) == 1) {
       ret <- glue(
-        "{date_forecast_gen}: Flood warning issued for the {basin_vec_syled} Basin in Nigeria"
+        "{pre_title}: Flood warning issued for the {basin_vec_syled} Basin in Nigeria"
       )
     }
   }
@@ -262,7 +261,8 @@ plot_average_discharge_normalized <-  function(df,
     )+
     geom_smooth(se=FALSE)+
     scale_color_manual(values = basin_palette)+
-    scale_x_date(breaks = "1 day", date_labels = "%m-%d") +
+    scale_x_date(breaks = "1 day",
+                 date_labels = "%b %e") +
     scale_y_continuous(
       breaks = seq(0, ymax_lim, .2),
       limits = c(0,ymax_lim),

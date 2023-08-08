@@ -83,15 +83,15 @@ Below we see the average predicted discharge as a percentage of the 2 year retur
 add_ggplot_custom(
   plot_object = p_discharge,
   alt = "Alert plot",
-  height = 6,
-  width = 6,
+  height = 3.75,
+  width = 5.5,
   html_width = 650
 )
 
 ```
 
 **Forecast data source:** Google.
-Data was accessed on `r gsub("^0", "", format(as_date(Sys.Date()), "%d %B %Y"))`. 
+Data was accessed on `r trimws(format(as_date(Sys.Date()), "%e %B %Y"))`. 
 
 ----
 

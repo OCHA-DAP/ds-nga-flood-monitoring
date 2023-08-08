@@ -7,20 +7,16 @@ library(dplyr)
 library(purrr)
 library(readr)
 library(ggplot2)
-library(tidyr)
+library(tidyr) # pivot wider
 library(stringr)
 library(lubridate)
-
 library(sf)
 library(googlesheets4)
 library(janitor)
 library(tmap)
 library(here)
 library(blastula)
-# library(gt)
 library(googledrive)
-# library(terra) # maybe remove
-# library(grid) #viewport
 library(ggtext) # colored title
 library(glue)
 library(gghdx)
@@ -231,8 +227,7 @@ txt_warning_status <- ifelse(
 # config email ------------------------------------------------------------
 
 date_prediction_made <- df_forecast_long$date %>% unique()
-dt_made_chr <- gsub("^0", "", format(as_date(date_prediction_made), "%d %B %Y"))
-
+dt_made_chr <- trimws(format(as_date(date_prediction_made), "%e %B %Y"))
 # Generate conditional email subject
 subj_email <-  paste0("Nigeria Riverine Flood Monitoring: ",
                       dt_made_chr)
