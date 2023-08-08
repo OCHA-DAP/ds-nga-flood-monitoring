@@ -65,7 +65,7 @@ add_image(
 
 The Nigeria riverine flood monitoring is a pilot project managed by the OCHA Centre for Humanitarian Data in collaboration with the Google Flood Forecasting Initiative in order to bring attention to changes in key indicators relevant to humanitarian response. The monitoring is currently limited to the Niger and Benue river basins in Nigeria.
 
-## Flood Warning `r dt_made_chr`
+## Flood Status `r dt_made_chr`
 
 **`r txt_warning_status`**
 
