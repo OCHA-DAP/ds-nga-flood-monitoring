@@ -1,5 +1,6 @@
 
-# these dependencies casuing tidyverse not to work?
+# these dependencies causing tidyverse install to fail on ubuntu runner in GHA
+# therefore installing separately first
 install.packages(
   c("ragg",
     "textshaping"

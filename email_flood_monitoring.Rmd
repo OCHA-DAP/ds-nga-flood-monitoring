@@ -30,19 +30,6 @@ knitr::opts_chunk$set(
 ```
 
 ```{r}
-# library(targets)
-# library(tidyverse)
-# # library(dplyr)
-# # library(ggplot2)
-# library(glue)
-# library(gghdx)
-# # library(readr)
-# library(googledrive)
-# library(googlesheets4)
-# library(blastula)
-# library(here)
-# library(sf)
-# library(janitor)
 gghdx()
 source("src/email/email_utils.R")
 ```
@@ -65,9 +52,7 @@ add_image(
 
 The Nigeria riverine flood monitoring is a pilot project managed by the OCHA Centre for Humanitarian Data in collaboration with the Google Flood Forecasting Initiative in order to bring attention to changes in key indicators relevant to humanitarian response. The monitoring is currently limited to the Niger and Benue river basins in Nigeria.
 
-## Flood Status `r dt_made_chr`
-
-**`r txt_warning_status`**
+## `r dt_made_chr` - `r txt_warning_status`
 
 The alerts status is determined based on forecast discharge values from Google's [Flood Hub](https://sites.research.google/floods). Forecast data from 55 gauges across 4 basins is analysed to determine the alert status, which is defined as 80% of gauges within a single basin are predicted to reach a discharge greater than a 1 in 2 year.
 

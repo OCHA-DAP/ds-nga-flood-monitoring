@@ -16,7 +16,6 @@ proj_map_viz_dataset <- function(dataset) {
   if (dataset == "river") {
     ret <- pull_dataset("741c6f20-6956-420d-aae4-37015cdd1ad4") %>%
       get_resource(2) %>%
-      # rhdx::get_resource_layers()
       read_resource(layer = "NGA_rvrsl_1m_esri")
   }
   if (dataset == "adm1") {
@@ -40,11 +39,13 @@ proj_map_viz_dataset <- function(dataset) {
 #' hdx_map_viz_layers()
 #' }
 hdx_map_viz_layers <- function() {
-  list(
-    river = proj_map_viz_dataset(dataset = "river"),
-    west_central_africa = proj_map_viz_dataset(dataset = "wca"),
-    admin_1 = proj_map_viz_dataset(dataset = "adm1")
-  )
+  c("river",
+    "wca",
+    "adm1") %>% 
+    map(
+      ~proj_map_viz_dataset(.x)
+    ) %>% 
+    set_names(c("river","west_central_africa","admin_1"))
 }
 
 
@@ -68,28 +69,6 @@ filter_basins <- function(df) {
     ) %>%
     filter(!is.na(basin_name))
 }
-
-#' filter_gauges
-#' @desciption
-#' convenience function to remove gauges that we are not using
-#' @param df data.frame
-#' @param gauge_id \code column name containing gauge_id (default = gauge_id)
-#'
-#' @return data.frame with gauges removed that we are not monitoring
-
-filter_gauges <- function(df, gauge_id = gauge_id) {
-  df %>%
-    filter(
-      (!{{ gauge_id }} %in% c(
-        "hybas_1120794570",
-        "hybas_1120741070",
-        "hybas_1120946640",
-        "hybas_1120974450",
-        "hybas_1120981190"
-      ))
-    )
-}
-
 
 #' accum_pct_gauges_breached
 #'
@@ -201,7 +180,7 @@ gen_plot_title <- function(df,
     slice(1) %>%
     ungroup()
 
-  pre_title <- "Hydrological Forecast"
+  pre_title <- "Hydrological forecast"
 
   if (nrow(basin_first_breach) == 0) {
     ret <- pre_title

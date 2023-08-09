@@ -1,3 +1,11 @@
+GAUGES_TO_REMOVE <- c(
+  "hybas_1120794570",
+  "hybas_1120741070",
+  "hybas_1120946640",
+  "hybas_1120974450",
+  "hybas_1120981190"
+)
+
 # libs --------------------------------------------------------------------
 # in dedicated monitoring repo should consider setting up w/ {renv}
 # have to load tidyverse packages separate for GHA for some reason
@@ -24,8 +32,6 @@ gghdx()
 source("R/email_funcs.R")
 # source("R/utils.R")
 
-
-
 # Get Data ----------------------------------------------------------------
 
 ## Authenticate google APIs ####
@@ -43,7 +49,6 @@ drive_dribble <- drive_ls(
 # load layers for mapping from hdx
 L <- hdx_map_viz_layers()
 
-
 # Basins
 drive_download(
   as_id("1AsB_Cf9QQb3vkp9ebIFvTPZ5gBYqYRJR"),
@@ -58,7 +63,6 @@ gdf_basins_poly <- read_rds(basin_fp) %>%
       filter(admin0Pcod == "NG")
   )
 
-
 ## Live Data ####
 ### Google forecast Workbook ####
 gauge_df_list <- read_gauge_googlesheets(
@@ -70,7 +74,9 @@ gdf_gauge <- st_as_sf(gauge_df_list$metadata,
   coords = c("longitude", "latitude"),
   crs = 4326
 ) %>%
-  filter_gauges() %>%
+  filter(
+    !gauge_id %in% GAUGES_TO_REMOVE
+  ) %>%
   st_join(
     gdf_basins_poly %>%
       select(hybas_id, basin_name)
@@ -85,13 +91,15 @@ df_forecast_long <- gauge_df_list %>%
     date = dmy(date),
     update_time_utc = ymd_hms(update_time_utc)
   ) %>%
-  filter(date == max(date)) %>%
-  group_by(gauge_id, date) %>%
+  group_by(gauge_id) %>%
   filter(
-    update_time_utc == max(update_time_utc)
+    date == max(date), # get max date per gauge
+    update_time_utc == max(update_time_utc) # get max update time (in case duplicates)
   ) %>%
   ungroup() %>%
-  filter_gauges() %>%
+  filter(
+    !gauge_id %in% GAUGES_TO_REMOVE
+  ) %>%
   # add basin informatino to gauge/forecast data
   left_join(
     gdf_gauge %>%
@@ -122,7 +130,7 @@ gauge_ids_breaching <- df_forecast_long %>%
 gdf_gauge_pts <- gdf_gauge %>%
   mutate(
     lgl_gauge_status = gauge_id %in% gauge_ids_breaching,
-    `Gauge Status` = if_else(lgl_gauge_status, "Threshold Exceeded", "Below Threshold"),
+    `Gauge status` = if_else(lgl_gauge_status, "Threshold Exceeded", "Below threshold"),
     aes_dot_size = if_else(lgl_gauge_status, 0.01, .005),
     aes_dot_alpha = if_else(lgl_gauge_status, 1, 0.5)
   )
@@ -140,7 +148,7 @@ df_basin_alert_status <- accum_pct_gauges_breached(
   ) %>%
   ungroup() %>%
   mutate(
-    `Basin Alert Status` = if_else(cum_pct >= 0.8, "Warning", "No Warning")
+    `Basin alert status` = if_else(cum_pct >= 0.8, "Warning", "No warning")
   )
 
 gdf_basin_alert_poly <- gdf_basins_poly %>%
@@ -163,7 +171,7 @@ m_basin_alerts <- nga_base_map(
     gdf_basin_alert_poly
   ) +
   tm_polygons(
-    col = "Basin Alert Status",
+    col = "Basin alert status",
     palette = c(
       `No Warning` = hdx_colors()["mint-ultra-light"],
       `Warning` = hdx_colors()["tomato-hdx"]
@@ -176,7 +184,7 @@ m_basin_alerts <- nga_base_map(
     legend.show = F
   ) +
   tm_lines(
-    col = "Basin Alert Status",
+    col = "Basin alert status",
     legend.col.show = F,
     palette = c(
       hdx_colors()["mint-hdx"],
@@ -191,26 +199,30 @@ m_basin_alerts <- nga_base_map(
   ) +
   tm_shape(L$river) +
   tm_lines(
-    col = hdx_colors()["sapphire-hdx"],
-    lwd = 3
+    col = hdx_colors()["sapphire-light"], # ["sapphire-hdx"],
+    lwd = 3,
+    alpha = 0.5
   ) +
   # gauge locations
   tm_shape(gdf_gauge_pts,
     legend.show = F
   ) +
   tm_dots(
-    col = "Gauge Status",
-    size = 0.2,
-    palette = c("#25252533", "black"),
+    col = "Gauge status",
+    size = 0.1,
+    palette = c(
+      "#bababaff",
+      "black"
+    ),
     legend.size.show = F
   ) +
   tm_shape(gdf_basin_alert_poly) +
   tm_text(text = "basin_name", shadow = T) +
   tm_layout(
     main.title.size = 0.5,
-    title.size = 0.5,
-    legend.text.size = 0.5,
-    legend.title.size = 0.7,
+    # title.size = 0.5,
+    legend.text.size = 0.58,
+    legend.title.size = 0.75,
     bg.color = "lightblue"
   )
 
@@ -226,7 +238,7 @@ p_discharge <- plot_average_discharge_normalized(
 )
 
 txt_warning_status <- ifelse(
-  any(df_basin_alert_status$`Basin Alert Status` == "Warning"), "Warning", "No Warning"
+  any(df_basin_alert_status$`Basin alert status` == "Warning"), "Warning", "No flood warning"
 )
 
 
@@ -242,12 +254,10 @@ subj_email <- paste0(
 
 # will need to write code w/ `{googledrive}` package to access from service account/GH Action runner
 
-cat("reading email receps fromo drive\n")
 drive_download(
   as_id("1A1WPSWBPJKFDBqZb1OXYHipsYxEErR-7"),
   email_receps_fp <- tempfile(fileext = ".csv")
 )
-
 
 email_receps_df <- read_csv(email_receps_fp)
 email_to <- email_receps_df %>%
