@@ -2,3 +2,17 @@
 .Rhistory
 .RData
 .Ruserdata
+.scrapy
+
+
+exploration/hybas_exploration_files/*
+*.gif
+*.html
+*.png
+*.pdf
+*.svg
+
+# ignore this pdf work until later
+pdf_design/*
+
+google_flood_pilot_key.json
