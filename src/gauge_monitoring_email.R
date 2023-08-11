@@ -130,7 +130,7 @@ gauge_ids_breaching <- df_forecast_long %>%
 gdf_gauge_pts <- gdf_gauge %>%
   mutate(
     lgl_gauge_status = gauge_id %in% gauge_ids_breaching,
-    `Gauge status` = if_else(lgl_gauge_status, "Threshold Exceeded", "Below threshold"),
+    `Gauge status` = if_else(lgl_gauge_status, "Threshold exceeded", "Below threshold"),
     aes_dot_size = if_else(lgl_gauge_status, 0.01, .005),
     aes_dot_alpha = if_else(lgl_gauge_status, 1, 0.5)
   )
@@ -165,7 +165,8 @@ gdf_basin_alert_lines <- st_cast(gdf_basin_alert_poly, "MULTILINESTRING")
 m_basin_alerts <- nga_base_map(
   west_africa_adm0 = L$west_central_africa,
   country_fill = "white",
-  surrounding_fill = hdx_colors()["gray-dark"]
+  surrounding_fill = hdx_colors()["gray-dark"],
+  surrounding_label = NULL
 ) +
   tm_shape(
     gdf_basin_alert_poly
@@ -221,13 +222,14 @@ m_basin_alerts <- nga_base_map(
   tm_layout(
     main.title.size = 0.5,
     # title.size = 0.5,
-    legend.text.size = 0.58,
-    legend.title.size = 0.75,
+    legend.position = c("right", "bottom"),
+    legend.bg.color = "white",
+    legend.bg.alpha = 0.75,
+    legend.frame = "darkgrey",
+    legend.text.size = 0.62,
+    legend.title.size = 1,
     bg.color = "lightblue"
   )
-
-
-
 
 # Plot --------------------------------------------------------------------
 p_discharge <- plot_average_discharge_normalized(

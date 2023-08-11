@@ -39,13 +39,15 @@ proj_map_viz_dataset <- function(dataset) {
 #' hdx_map_viz_layers()
 #' }
 hdx_map_viz_layers <- function() {
-  c("river",
+  c(
+    "river",
     "wca",
-    "adm1") %>% 
+    "adm1"
+  ) %>%
     map(
-      ~proj_map_viz_dataset(.x)
-    ) %>% 
-    set_names(c("river","west_central_africa","admin_1"))
+      ~ proj_map_viz_dataset(.x)
+    ) %>%
+    set_names(c("river", "west_central_africa", "admin_1"))
 }
 
 
@@ -283,7 +285,8 @@ plot_average_discharge_normalized <- function(df,
 nga_base_map <- function(
     west_africa_adm0,
     country_fill = "white",
-    surrounding_fill = "lightgrey") {
+    surrounding_fill = "lightgrey",
+    surrounding_label = NULL) {
   # countries of interest
   coi <- west_africa_adm0 %>%
     mutate(
@@ -294,14 +297,12 @@ nga_base_map <- function(
   coi_l <- split(coi, coi$aoi)
 
   # map
-  tm_shape(coi, bbox = coi_l$aoi) +
+  m_ret <- tm_shape(coi, bbox = coi_l$aoi) +
     tm_polygons(
       col = "aoi",
       palette = c(country_fill, surrounding_fill),
       legend.show = F
     ) +
-    tm_shape(coi_l$not_aoi) +
-    tm_text(text = "admin0Name", col = "white") +
     tm_shape(coi_l$aoi) +
     tm_borders(col = "#414141", lwd = 5, alpha = 1) +
     tm_shape(coi_l$aoi, legend.show = F) +
@@ -311,4 +312,10 @@ nga_base_map <- function(
       lwd = 1,
       alpha = 0.7
     )
+  if (!is.null(surrounding_label)) {
+    m_ret <- m_ret +
+      tm_shape(coi_l$not_aoi) +
+      tm_text(text = "admin0Name", col = "white")
+  }
+  return(m_ret)
 }
