@@ -90,23 +90,21 @@ filter_basins <- function(df) {
 #'  'cum_pct' : % of gauges that have been breached up to that point
 
 accum_pct_gauges_breached <- function(df,
-                                      date = "date_predict",
-                                      lgl_var = "gte_2_rp") {
-  df %>%
-    group_by(basin_name, !!sym(date)) %>%
-    summarise(
-      g_ids = list(unique(gauge_id)),
-      g_ids_x = list(unique(gauge_id[!!sym(lgl_var)])),
+                                           date= "date_predict",
+                                           lgl_var="gte_2_rp"){
+  df %>% 
+    group_by(basin_name, gauge_id) %>%
+    mutate(
+      gauge_break = cumsum(!!sym(lgl_var)) >= 1,
       .groups = "drop_last"
     ) %>%
-    mutate(
-      g_ids_accum = accumulate(g_ids_x, `c`),
-      g_ids_accum_unique = map(g_ids_accum, ~ unique(.x)),
-      cum_pct = map_int(g_ids_accum_unique, length) / map_int(g_ids, length)
-    ) %>%
-    select(-starts_with("g_ids")) %>%
-    ungroup()
+    group_by(basin_name, !!sym(date)) %>%
+    summarise(
+      cum_pct = mean(gauge_break),
+      .groups = "drop_last"
+    )
 }
+
 
 read_gauge_googlesheets <- function(url = Sys.getenv("GFF_GAUGE_URL")) {
   sns <- sheet_names(ss = url)
