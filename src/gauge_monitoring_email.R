@@ -273,7 +273,6 @@ email_creds <- creds_envvar(
   port = Sys.getenv("CHD_DS_PORT"),
   use_ssl = TRUE
 )
-email_to <- c(email_to, "seth.caldwell@un.org")
 email_rmd_fp <- "email_flood_monitoring.Rmd"
 
 render_email(
