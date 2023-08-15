@@ -220,14 +220,15 @@ m_basin_alerts <- nga_base_map(
   tm_shape(gdf_basin_alert_poly) +
   tm_text(text = "basin_name", shadow = T) +
   tm_layout(
-    main.title.size = 0.5,
-    # title.size = 0.5,
+    title.size = 1.2,
+    outer.margins = c(0, 0, 0, 0),
+    inner.margins = c(0, 0, 0, 0),
     legend.position = c("right", "bottom"),
     legend.bg.color = "white",
     legend.bg.alpha = 0.75,
     legend.frame = "darkgrey",
-    legend.text.size = 0.62,
-    legend.title.size = 1,
+    legend.text.size = 0.7,
+    legend.title.size = 0.8,
     bg.color = "lightblue"
   )
 
@@ -254,8 +255,6 @@ subj_email <- paste0(
   dt_made_chr
 )
 
-# will need to write code w/ `{googledrive}` package to access from service account/GH Action runner
-
 drive_download(
   as_id("1A1WPSWBPJKFDBqZb1OXYHipsYxEErR-7"),
   email_receps_fp <- tempfile(fileext = ".csv")
@@ -266,7 +265,6 @@ email_to <- email_receps_df %>%
   filter(to) %>%
   pull(email_address)
 
-
 # Load in e-mail credentials
 email_creds <- creds_envvar(
   user = Sys.getenv("CHD_DS_EMAIL_USERNAME"),
@@ -275,8 +273,8 @@ email_creds <- creds_envvar(
   port = Sys.getenv("CHD_DS_PORT"),
   use_ssl = TRUE
 )
-
 email_rmd_fp <- "email_flood_monitoring.Rmd"
+
 render_email(
   input = email_rmd_fp,
   envir = parent.frame()
