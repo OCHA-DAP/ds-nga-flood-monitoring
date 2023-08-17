@@ -30,6 +30,7 @@ library(rhdx)
 gghdx()
 
 source("R/email_funcs.R")
+source("src/email/email_utils.R")
 # source("R/utils.R")
 
 # Get Data ----------------------------------------------------------------
@@ -150,15 +151,16 @@ df_basin_alert_status <- accum_pct_gauges_breached(
   mutate(
     `Basin alert status` = if_else(cum_pct >= 0.8, "Warning", "No warning")
   )
+# gauge_warning
 
 gdf_basin_alert_poly <- gdf_basins_poly %>%
   left_join(
     df_basin_alert_status,
     by = "basin_name"
   )
+gdf_basin_alert_poly[1,"Basin alert status"]<-"Warning"
 
 gdf_basin_alert_lines <- st_cast(gdf_basin_alert_poly, "MULTILINESTRING")
-
 
 # Alert Map ---------------------------------------------------------------
 
@@ -178,11 +180,11 @@ m_basin_alerts <- nga_base_map(
       `Warning` = hdx_colors()["tomato-hdx"]
     ),
     alpha = 0.5,
-    border.col = NULL
+    border.col = NULL, 
+    legend.show=F
   ) +
   tm_shape(
-    gdf_basin_alert_lines,
-    legend.show = F
+    gdf_basin_alert_lines
   ) +
   tm_lines(
     col = "Basin alert status",
@@ -215,10 +217,26 @@ m_basin_alerts <- nga_base_map(
       "#bababaff",
       "black"
     ),
+    legend.show=F,
     legend.size.show = F
   ) +
   tm_shape(gdf_basin_alert_poly) +
   tm_text(text = "basin_name", shadow = T) +
+  tm_add_legend(type ="fill",
+                title = "Basin alert status",
+                labels= c("No warning","Warning"),
+                col = c(hdx_colors()["mint-hdx"],
+                        hdx_colors()["tomato-dark"]),
+                alpha = 0.5,
+                border.col="grey"
+                )+
+  tm_add_legend(type ="symbol",
+                title = "Gauge status",
+                labels= c("No warning","Warning"),
+                col = c( "#bababaff",
+                         "black"),
+                border.col = "grey"
+                )+
   tm_layout(
     title.size = 1.2,
     outer.margins = c(0, 0, 0, 0),
