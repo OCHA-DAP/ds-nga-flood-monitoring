@@ -29,9 +29,9 @@ library(gghdx)
 library(rhdx)
 gghdx()
 
-source("R/email_funcs.R")
-source("src/email/email_utils.R")
-# source("R/utils.R")
+source(file.path("R","email_funcs.R"))
+source(file.path("src","email","email_utils.R"))
+
 
 # Get Data ----------------------------------------------------------------
 
@@ -151,14 +151,12 @@ df_basin_alert_status <- accum_pct_gauges_breached(
   mutate(
     `Basin alert status` = if_else(cum_pct >= 0.8, "Warning", "No warning")
   )
-# gauge_warning
 
 gdf_basin_alert_poly <- gdf_basins_poly %>%
   left_join(
     df_basin_alert_status,
     by = "basin_name"
   )
-gdf_basin_alert_poly[1,"Basin alert status"]<-"Warning"
 
 gdf_basin_alert_lines <- st_cast(gdf_basin_alert_poly, "MULTILINESTRING")
 
@@ -167,7 +165,7 @@ gdf_basin_alert_lines <- st_cast(gdf_basin_alert_poly, "MULTILINESTRING")
 m_basin_alerts <- nga_base_map(
   west_africa_adm0 = L$west_central_africa,
   country_fill = "white",
-  surrounding_fill = hdx_colors()["gray-dark"],
+  surrounding_fill = hdx_hex("gray-dark"),
   surrounding_label = NULL
 ) +
   tm_shape(
@@ -176,12 +174,12 @@ m_basin_alerts <- nga_base_map(
   tm_polygons(
     col = "Basin alert status",
     palette = c(
-      `No Warning` = hdx_colors()["mint-ultra-light"],
-      `Warning` = hdx_colors()["tomato-hdx"]
+      `No Warning` = hdx_hex("mint-ultra-light"),
+      `Warning` = hdx_hex("tomato-hdx")
     ),
     alpha = 0.5,
     border.col = NULL, 
-    legend.show=F
+    legend.show = FALSE
   ) +
   tm_shape(
     gdf_basin_alert_lines
@@ -190,25 +188,25 @@ m_basin_alerts <- nga_base_map(
     col = "Basin alert status",
     legend.col.show = F,
     palette = c(
-      hdx_colors()["mint-hdx"],
-      hdx_colors()["tomato-dark"]
+      hdx_hex("mint-hdx"),
+      hdx_hex("tomato-dark")
     ),
     lwd = 4, alpha = 0.3
   ) +
   tm_shape(L$admin_1) +
   tm_borders(
-    col = hdx_colors()["gray-dark"],
+    col = hdx_hex("gray-dark"),
     alpha = 0.2
   ) +
   tm_shape(L$river) +
   tm_lines(
-    col = hdx_colors()["sapphire-light"], # ["sapphire-hdx"],
+    col = hdx_hex("sapphire-light"), 
     lwd = 3,
     alpha = 0.5
   ) +
   # gauge locations
   tm_shape(gdf_gauge_pts,
-    legend.show = F
+    legend.show = FALSE
   ) +
   tm_dots(
     col = "Gauge status",
@@ -217,16 +215,17 @@ m_basin_alerts <- nga_base_map(
       "#bababaff",
       "black"
     ),
-    legend.show=F,
-    legend.size.show = F
+    legend.show= FALSE,
+    legend.size.show = FALSE
   ) +
   tm_shape(gdf_basin_alert_poly) +
-  tm_text(text = "basin_name", shadow = T) +
+  tm_text(text = "basin_name", shadow = TRUE) +
   tm_add_legend(type ="fill",
                 title = "Basin alert status",
                 labels= c("No warning","Warning"),
-                col = c(hdx_colors()["mint-hdx"],
-                        hdx_colors()["tomato-dark"]),
+                col = c(hdx_hex("mint-hdx"),
+                        hdx_hex("tomato-dark")
+                        ),
                 alpha = 0.5,
                 border.col="grey"
                 )+

@@ -59,13 +59,12 @@ The alerts status is determined based on forecast discharge values from Google's
 The map shows the gauge locations and the warning status by basin. For more details, including the estimated flood extent, please visit Google's [Flood Hub](https://sites.research.google/floods).
 
 ```{r MapBasins}
-# m_basin_alerts
-add_tmap(
+add_tmap_custom(
   plot_object = m_basin_alerts,
   alt = "Status Map",
   height = 3.75,
-  width = 5.5
-  # html_width = 650
+  width = 5.5,
+  html_width = 650
 )
 
 ```
