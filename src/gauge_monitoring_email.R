@@ -236,6 +236,8 @@ m_basin_alerts <- nga_base_map(
                          "black"),
                 border.col = "grey"
                 )+
+  tm_credits(text = "Data Souces:\nAdmin Boundaries: UN OCHA/ OSGOF\nRiver: DCW/ ESRI",
+             size = 0.35,col = "black",position = c(0.005,0.012))+
   tm_layout(
     title.size = 1.2,
     outer.margins = c(0, 0, 0, 0),
