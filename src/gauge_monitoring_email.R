@@ -231,13 +231,15 @@ m_basin_alerts <- nga_base_map(
                 )+
   tm_add_legend(type ="symbol",
                 title = "Gauge status",
-                labels= c("No warning","Warning"),
+                labels= c("Below threshold","Threshold exceeded"),
                 col = c( "#bababaff",
                          "black"),
                 border.col = "grey"
                 )+
   tm_credits(text = "Data Souces:\nAdmin Boundaries: UN OCHA/ OSGOF\nRiver: DCW/ ESRI",
-             size = 0.35,col = "black",position = c(0.005,0.012))+
+             size = 0.4,
+             col = "black",
+             position = c(0.005,0.012))+
   tm_layout(
     title.size = 1.2,
     outer.margins = c(0, 0, 0, 0),
@@ -287,7 +289,7 @@ email_to <- email_receps_df %>%
 # Load in e-mail credentials
 email_creds <- creds_envvar(
   user = Sys.getenv("CHD_DS_EMAIL_USERNAME"),
-  pass_envvar = "CHD_DS_EMAIL_PASSWORD",
+  pass_envvar = Sys.getenv("CHD_DS_EMAIL_PASSWORD"),
   host = Sys.getenv("CHD_DS_HOST"),
   port = Sys.getenv("CHD_DS_PORT"),
   use_ssl = TRUE
