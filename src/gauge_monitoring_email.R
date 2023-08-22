@@ -289,7 +289,7 @@ email_to <- email_receps_df %>%
 # Load in e-mail credentials
 email_creds <- creds_envvar(
   user = Sys.getenv("CHD_DS_EMAIL_USERNAME"),
-  pass_envvar = Sys.getenv("CHD_DS_EMAIL_PASSWORD"),
+  pass_envvar = "CHD_DS_EMAIL_PASSWORD",
   host = Sys.getenv("CHD_DS_HOST"),
   port = Sys.getenv("CHD_DS_PORT"),
   use_ssl = TRUE
