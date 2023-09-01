@@ -62,10 +62,15 @@ The map shows the gauge locations and the warning status by basin. For more deta
 add_tmap_custom(
   plot_object = m_basin_alerts,
   alt = "Status Map",
-  height = 3.75,
-  width = 5.5,
-  html_width = 650
+  height = 4,
+  width = 4*1.231133,
+  html_width = 400
 )
+
+# add_tmap(plot_object = m_basin_alerts,
+#            height = 4,
+#          width = 4*1.231133,
+#          alt = "Status Map")
 
 ```
 

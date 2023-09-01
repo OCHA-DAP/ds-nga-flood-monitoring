@@ -258,7 +258,7 @@ plot_average_discharge_normalized <- function(df,
       y = "Average gauge discharge (% 2 Year RP)",
     ) +
     theme(
-      axis.text.x = element_text(angle = 90),
+      # axis.text.x = element_text(angle = 90),
       axis.title.x = element_blank(),
       legend.title = element_blank(),
       plot.subtitle = element_markdown(),
@@ -295,21 +295,22 @@ nga_base_map <- function(
   coi_l <- split(coi, coi$aoi)
 
   # map
-  m_ret <- tm_shape(coi, bbox = coi_l$aoi) +
+  m_ret <-tm_shape(coi_l$not_aoi,bbox=coi_l$aoi)+
     tm_polygons(
-      col = "aoi",
-      palette = c(country_fill, surrounding_fill),
-      legend.show = F
-    ) +
-    tm_shape(coi_l$aoi) +
-    tm_borders(col = "#414141", lwd = 5, alpha = 1) +
-    tm_shape(coi_l$aoi, legend.show = F) +
-    tm_borders(
-      col = "white",
-      # lty = 3, # linetype long dash
-      lwd = 1,
-      alpha = 0.7
-    )
+      col = surrounding_fill,
+      border.col = "#E0E0E0" # subnatl border col
+    )+
+    tm_shape(coi_l$aoi)+
+    tm_polygons(col = "white")+
+    tm_shape(coi_l$aoi)+
+    tm_borders(col = "#CCCCCC", lwd = 4, alpha = 1) #+
+    # tm_shape(coi_l$aoi, legend.show = F) #+
+    # tm_borders(
+    #   col = "white",
+    #   # lty = 3, # linetype long dash
+    #   lwd = 1,
+    #   alpha = 0.7
+    # )
   if (!is.null(surrounding_label)) {
     m_ret <- m_ret +
       tm_shape(coi_l$not_aoi) +
