@@ -12,7 +12,7 @@ install.packages(
     "sf",
     "googlesheets4",
     "janitor",
-    "tmap",
+    # "tmap",
     "blastula",
     "googledrive",
     "ggtext",
@@ -24,6 +24,7 @@ install.packages(
 )
 remotes::install_github("dickoa/rhdx")
 remotes::install_github("OCHA-DAP/gghdx")
+remotes::install_github("r-tmap/tmap@v4")
 # library(here)
 
 # library(gt)

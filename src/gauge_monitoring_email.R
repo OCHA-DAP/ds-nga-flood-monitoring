@@ -5,7 +5,7 @@ GAUGES_TO_REMOVE <- c(
   "hybas_1120974450",
   "hybas_1120981190"
 )
-
+# install_github("r-tmap/tmap@v4")
 # libs --------------------------------------------------------------------
 # in dedicated monitoring repo should consider setting up w/ {renv}
 # have to load tidyverse packages separate for GHA for some reason
@@ -245,7 +245,7 @@ m_basin_alerts <- nga_base_map(
   tm_add_legend(type ="line",
                 # title = "Gauge status",
                 labels= "River",
-                col = hdx_hex("sapphire-light")
+                col = hdx_hex("sapphire-light"),
                 
                 )+
   tm_credits(text = paste0("Data Souces:\nAdmin Boundaries: UN OCHA/ OSGOF\nRiver: DCW/ ESRI\n",footnote),
