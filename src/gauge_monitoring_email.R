@@ -172,7 +172,7 @@ m_basin_alerts <- nga_base_map(
   west_africa_adm0 = L$west_central_africa,
   country_fill = "white",
   surrounding_fill = surrounding_country_fill_col,
-  surrounding_label = NULL
+  surrounding_label = NULL,extend_bottom = 0.2
 ) +
   tm_shape(
     gdf_basin_alert_poly
@@ -226,6 +226,13 @@ m_basin_alerts <- nga_base_map(
   ) +
   tm_shape(gdf_basin_alert_poly) +
   tm_text(text = "basin_name", shadow = TRUE) +
+  tm_shape(
+    L$west_central_africa %>% 
+             filter(admin0Pcod=="NG")
+           )+
+  tm_borders(
+    col = natl_border_col
+  )+
   tm_add_legend(type ="fill",
                 title = "Basin alert status",
                 labels= c("No warning","Warning"),
@@ -243,17 +250,19 @@ m_basin_alerts <- nga_base_map(
                 border.col = "grey"
                 )+
   tm_add_legend(type ="line",
-                # title = "Gauge status",
-                labels= "River",
+                labels= "River (DCW/ ESRI)",
                 col = hdx_hex("sapphire-light"),
-                
                 )+
-  tm_credits(text = paste0("Data Souces:\nAdmin Boundaries: UN OCHA/ OSGOF\nRiver: DCW/ ESRI\n",footnote),
+  tm_add_legend(type ="line",
+                labels= "Admin 0 (UN OCHA/OSGOF)",
+                col = natl_border_col,
+                )+
+  tm_credits(text = footnote, 
              size = 1,
-             bg.color = "white",
+             # bg.color = "white",
              width = 0.4,
-             fontfamily = "serif",
-             fontface = "plain",
+             # fontfamily = "serif",
+             # fontface = "plain",
              col = "black",
              position = c(0.005,0.012))+
   tm_layout(
@@ -264,11 +273,11 @@ m_basin_alerts <- nga_base_map(
     legend.position = c("right", "bottom"),
     legend.bg.color = "white",
     legend.bg.alpha = 1,
-    legend.text.fontface = "plain",
-    legend.text.fontfamily = "serif",
+    # legend.text.fontface = "plain",
+    # legend.text.fontfamily = "serif",
     legend.frame = "white",
-    fontface = "plain",
-    fontfamily = "serif",
+    # fontface = "plain",
+    # fontfamily = "serif",
     legend.height = 0.5,
     legend.title.size = 0.9,
     legend.title.fontface = "bold",
@@ -304,11 +313,11 @@ testout_id<- drive_dribble %>%
 drive_upload(
   media = tmpfile_ck,
   path = as_id(testout_id),
-  name = "mappymapmap_linux4.png"
+  name = "mappymapmap_linux5.png"
 )
 
 # config email ------------------------------------------------------------
-send_email <- F
+send_email <- T
 
 
 if(send_email){

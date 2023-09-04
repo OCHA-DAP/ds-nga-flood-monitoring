@@ -284,7 +284,9 @@ nga_base_map <- function(
     west_africa_adm0,
     country_fill = "white",
     surrounding_fill = "lightgrey",
-    surrounding_label = NULL) {
+    surrounding_label = NULL,
+    extend_bottom =NULL
+    ) {
   # countries of interest
   coi <- west_africa_adm0 %>%
     mutate(
@@ -293,9 +295,15 @@ nga_base_map <- function(
 
   # split
   coi_l <- split(coi, coi$aoi)
+  aoi_bbox <- st_bbox(
+    coi_l$aoi
+    )
+  if(extend_bottom){
+    aoi_bbox[["ymin"]]<-aoi_bbox[["ymin"]]-extend_bottom
+  }
 
   # map
-  m_ret <-tm_shape(coi_l$not_aoi,bbox=coi_l$aoi)+
+  m_ret <-tm_shape(coi_l$not_aoi,bbox=aoi_bbox)+
     tm_polygons(
       col = surrounding_fill,
       border.col = "#E0E0E0" # subnatl border col
