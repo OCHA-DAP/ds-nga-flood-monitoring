@@ -297,71 +297,44 @@ txt_warning_status <- ifelse(
   any(df_basin_alert_status$`Basin alert status` == "Warning"), "Warning", "No flood warning"
 )
 
+# config email ------------------------------------------------------------
 
-# TESTING CODE!!!
-tmpfile_ck <- tempfile("tmap", fileext = ".png")
-tmap::tmap_save(tm = m_basin_alerts,
-                # device = "png",
-                filename = tmpfile_ck,
-                dpi = 200,
-                height = 4,
-                width = 4*1.231133,units = "in"
-                )
-testout_id<- drive_dribble %>% 
-  filter(str_detect(name,"test")) %>% 
-  pull(id)
-drive_upload(
-  media = tmpfile_ck,
-  path = as_id(testout_id),
-  name = "mappymapmap_linux5.png"
+date_prediction_made <- df_forecast_long$date %>% unique()
+dt_made_chr <- trimws(format(as_date(date_prediction_made), "%e %B %Y"))
+# Generate conditional email subject
+subj_email <- paste0(
+  "Nigeria Riverine Flood Monitoring: ",
+  dt_made_chr
 )
 
-# config email ------------------------------------------------------------
-send_email <- T
+drive_download(
+  as_id("1A1WPSWBPJKFDBqZb1OXYHipsYxEErR-7"),
+  email_receps_fp <- tempfile(fileext = ".csv")
+)
+email_receps_df <- read_csv(email_receps_fp)
 
+email_to <-  email_receps_df %>% 
+  filter(to) %>% 
+  pull(email_address)
 
-if(send_email){
-  date_prediction_made <- df_forecast_long$date %>% unique()
-  dt_made_chr <- trimws(format(as_date(date_prediction_made), "%e %B %Y"))
-  # Generate conditional email subject
-  subj_email <- paste0(
-    "Nigeria Riverine Flood Monitoring: ",
-    dt_made_chr
-  )
-  
-  
-  drive_download(
-    as_id("1A1WPSWBPJKFDBqZb1OXYHipsYxEErR-7"),
-    email_receps_fp <- tempfile(fileext = ".csv")
-  )
-  email_receps_df <- read_csv(email_receps_fp)
-  email_to <- email_receps_df %>%
-    filter(to,
-           str_detect(email_address,"^z.*") # for testing.
-    ) %>%
-    pull(email_address)
-  
-  subj_email <- paste0("remote testing: ", subj_email)
-  # Load in e-mail credentials
-  email_creds <- creds_envvar(
-    user = Sys.getenv("CHD_DS_EMAIL_USERNAME"),
-    pass_envvar = "CHD_DS_EMAIL_PASSWORD",
-    host = Sys.getenv("CHD_DS_HOST"),
-    port = Sys.getenv("CHD_DS_PORT"),
-    use_ssl = TRUE
-  )
-  email_rmd_fp <- "email_flood_monitoring.Rmd"
-  
-  render_email(
-    input = email_rmd_fp,
-    envir = parent.frame()
-  ) %>%
-    smtp_send(
-      to = email_to,
-      # bcc = filter(df_recipients, !to)$email,
-      from = "data.science@humdata.org",
-      subject = subj_email,
-      credentials = email_creds
-    )  
-}
+# Load in e-mail credentials
+email_creds <- creds_envvar(
+  user = Sys.getenv("CHD_DS_EMAIL_USERNAME"),
+  pass_envvar = "CHD_DS_EMAIL_PASSWORD",
+  host = Sys.getenv("CHD_DS_HOST"),
+  port = Sys.getenv("CHD_DS_PORT"),
+  use_ssl = TRUE
+)
+email_rmd_fp <- "email_flood_monitoring.Rmd"
 
+render_email(
+  input = email_rmd_fp,
+  envir = parent.frame()
+) %>%
+  smtp_send(
+    to = email_to,
+    # bcc = filter(df_recipients, !to)$email,
+    from = "data.science@humdata.org",
+    subject = subj_email,
+    credentials = email_creds
+  )  
