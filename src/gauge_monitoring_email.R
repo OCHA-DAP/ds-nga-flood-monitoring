@@ -240,22 +240,21 @@ m_basin_alerts <- nga_base_map(
                         hdx_hex("tomato-dark")
                         ),
                 alpha = 0.5,
-                border.col="grey"
+                border.col="grey",group = "alert"
                 )+
   tm_add_legend(type ="symbol",
                 title = "Gauge status",
                 labels= c("Below threshold","Threshold exceeded"),
                 col = c( "#bababaff",
                          "black"),
-                border.col = "grey"
+                border.col = "grey",group="alert"
                 )+
   tm_add_legend(type ="line",
-                labels= "River (DCW/ ESRI)",
-                col = hdx_hex("sapphire-light"),
-                )+
-  tm_add_legend(type ="line",
-                labels= "Admin 0 (UN OCHA/OSGOF)",
-                col = natl_border_col,
+                labels= c("River (DCW/ ESRI)","Admin 0 (UN OCHA/OSGOF)"),
+                col = c(
+                  hdx_hex("sapphire-light"),
+                  natl_border_col
+                  ),
                 )+
   tm_credits(text = footnote, 
              size = 1,
@@ -264,13 +263,14 @@ m_basin_alerts <- nga_base_map(
              # fontfamily = "serif",
              # fontface = "plain",
              col = "black",
-             position = c(0.005,0.012))+
+             position = c(0.0,0.0012))+
   tm_layout(
     scale = 1,
     title.size = 1.2,
     outer.margins = c(0, 0, 0, 0),
     inner.margins = c(0, 0, 0, 0),
-    legend.position = c("right", "bottom"),
+    # legend.position = c("right", "bottom"),
+      legend.position=c(0.79,0.05),
     legend.bg.color = "white",
     legend.bg.alpha = 1,
     # legend.text.fontface = "plain",
