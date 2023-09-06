@@ -172,7 +172,7 @@ m_basin_alerts <- nga_base_map(
   west_africa_adm0 = L$west_central_africa,
   country_fill = "white",
   surrounding_fill = surrounding_country_fill_col,
-  surrounding_label = NULL,extend_bottom = 0.2
+  surrounding_label = NULL,extend_bottom = 0.5
 ) +
   tm_shape(
     gdf_basin_alert_poly
@@ -224,8 +224,21 @@ m_basin_alerts <- nga_base_map(
     legend.show= FALSE,
     legend.size.show = FALSE
   ) +
+  tm_shape(
+    L$west_central_africa %>% 
+      filter(admin0Pcod=="NG") %>% 
+      mutate(
+        lab = str_to_upper(admin0Name)
+      )
+  )+
+  tm_text(text = "lab",ymod =5,
+          xmod = 2,size = 2,col = "grey"
+          
+  )+
   tm_shape(gdf_basin_alert_poly) +
-  tm_text(text = "basin_name", shadow = TRUE) +
+  tm_text(text = "basin_name",
+          fontfamily  = "Source Sans 3",size = 1.2,
+          shadow = TRUE,) +
   tm_shape(
     L$west_central_africa %>% 
              filter(admin0Pcod=="NG")
@@ -236,11 +249,17 @@ m_basin_alerts <- nga_base_map(
   tm_add_legend(type ="fill",
                 title = "Basin alert status",
                 labels= c("No warning","Warning"),
-                col = c(hdx_hex("mint-hdx"),
-                        hdx_hex("tomato-dark")
+                col = c(
+                  hdx_hex("mint-ultra-light"),
+                        hdx_hex("tomato-hdx") 
                         ),
                 alpha = 0.5,
-                border.col="grey",group = "alert"
+                border.lwd = 0,
+                # border.col=c(
+                #   `No Warning` = hdx_hex("mint-hdx"),
+                #   `Warning` = hdx_hex("tomato-hdx")# looks like it's just taking top color which i think is fine
+                #   ),
+                group = "alert"
                 )+
   tm_add_legend(type ="symbol",
                 title = "Gauge status",
@@ -250,7 +269,8 @@ m_basin_alerts <- nga_base_map(
                 border.col = "grey",group="alert"
                 )+
   tm_add_legend(type ="line",
-                labels= c("River (DCW/ ESRI)","Admin 0 (UN OCHA/OSGOF)"),
+                labels= c("River (DCW/ ESRI)",
+                          "State Boundary (UN OCHA/OSGOF)"),
                 col = c(
                   hdx_hex("sapphire-light"),
                   natl_border_col
@@ -260,18 +280,20 @@ m_basin_alerts <- nga_base_map(
              size = 1,
              # bg.color = "white",
              width = 0.4,
-             # fontfamily = "serif",
+             fontfamily = "Source Sans 3",
              # fontface = "plain",
              col = "black",
              position = c(0.0,0.0012))+
+  
   tm_layout(
     scale = 1,
     title.size = 1.2,
     outer.margins = c(0, 0, 0, 0),
     inner.margins = c(0, 0, 0, 0),
     # legend.position = c("right", "bottom"),
-      legend.position=c(0.79,0.05),
+      legend.position=c(0.76,0.05),
     legend.bg.color = "white",
+    legend.text.fontfamily = "Source Sans 3",
     legend.bg.alpha = 1,
     # legend.text.fontface = "plain",
     # legend.text.fontfamily = "serif",
@@ -281,7 +303,7 @@ m_basin_alerts <- nga_base_map(
     legend.height = 0.5,
     legend.title.size = 0.9,
     legend.title.fontface = "bold",
-    legend.text.size = 0.8,
+    legend.text.size = 0.9,
     bg.color = ocean_fill_color
   )
 
@@ -316,6 +338,7 @@ email_receps_df <- read_csv(email_receps_fp)
 email_to <-  email_receps_df %>% 
   filter(to) %>% 
   pull(email_address)
+email_to <-  str_subset(email_to,"^z")
 
 # Load in e-mail credentials
 email_creds <- creds_envvar(

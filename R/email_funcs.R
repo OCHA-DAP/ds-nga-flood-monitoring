@@ -136,7 +136,7 @@ read_gauge_googlesheets <- function(url = Sys.getenv("GFF_GAUGE_URL")) {
 basin_pal <- function() {
   c(
     "tomato-dark",
-    "gray-dark",
+    "gray-medium" ,
     "sapphire-hdx",
     "mint-dark"
   ) %>%
@@ -246,12 +246,13 @@ plot_average_discharge_normalized <- function(df,
     scale_color_manual(values = basin_palette) +
     scale_x_date(
       breaks = "1 day",
-      date_labels = "%b %e"
+      date_labels = "%b %e",
+      expand = c(0,0)
     ) +
     scale_y_continuous(
       breaks = seq(0, ymax_lim, .2),
       limits = c(0, ymax_lim),
-      labels = scales::percent,
+      labels = scales::percent
     ) +
     labs(
       title = plot_title,
