@@ -136,7 +136,7 @@ read_gauge_googlesheets <- function(url = Sys.getenv("GFF_GAUGE_URL")) {
 basin_pal <- function() {
   c(
     "tomato-dark",
-    "gray-dark",
+    "gray-medium" ,
     "sapphire-hdx",
     "mint-dark"
   ) %>%
@@ -246,19 +246,21 @@ plot_average_discharge_normalized <- function(df,
     scale_color_manual(values = basin_palette) +
     scale_x_date(
       breaks = "1 day",
-      date_labels = "%b %e"
+      date_labels = "%b %e",
+      expand = c(0,0)
     ) +
     scale_y_continuous(
       breaks = seq(0, ymax_lim, .2),
       limits = c(0, ymax_lim),
       labels = scales::percent,
+      expand = c(0,0)
     ) +
     labs(
       title = plot_title,
       y = "Average gauge discharge (% 2 Year RP)",
     ) +
     theme(
-      axis.text.x = element_text(angle = 90),
+      # axis.text.x = element_text(angle = 90),
       axis.title.x = element_blank(),
       legend.title = element_blank(),
       plot.subtitle = element_markdown(),
@@ -284,7 +286,9 @@ nga_base_map <- function(
     west_africa_adm0,
     country_fill = "white",
     surrounding_fill = "lightgrey",
-    surrounding_label = NULL) {
+    surrounding_label = NULL,
+    extend_bottom =NULL
+    ) {
   # countries of interest
   coi <- west_africa_adm0 %>%
     mutate(
@@ -293,23 +297,30 @@ nga_base_map <- function(
 
   # split
   coi_l <- split(coi, coi$aoi)
+  aoi_bbox <- st_bbox(
+    coi_l$aoi
+    )
+  if(extend_bottom){
+    aoi_bbox[["ymin"]]<-aoi_bbox[["ymin"]]-extend_bottom
+  }
 
   # map
-  m_ret <- tm_shape(coi, bbox = coi_l$aoi) +
+  m_ret <-tm_shape(coi_l$not_aoi,bbox=aoi_bbox)+
     tm_polygons(
-      col = "aoi",
-      palette = c(country_fill, surrounding_fill),
-      legend.show = F
-    ) +
-    tm_shape(coi_l$aoi) +
-    tm_borders(col = "#414141", lwd = 5, alpha = 1) +
-    tm_shape(coi_l$aoi, legend.show = F) +
-    tm_borders(
-      col = "white",
-      # lty = 3, # linetype long dash
-      lwd = 1,
-      alpha = 0.7
-    )
+      col = surrounding_fill,
+      border.col = "#E0E0E0" # subnatl border col
+    )+
+    tm_shape(coi_l$aoi)+
+    tm_polygons(col = "white")+
+    tm_shape(coi_l$aoi)+
+    tm_borders(col = "#CCCCCC", lwd = 4, alpha = 1) #+
+    # tm_shape(coi_l$aoi, legend.show = F) #+
+    # tm_borders(
+    #   col = "white",
+    #   # lty = 3, # linetype long dash
+    #   lwd = 1,
+    #   alpha = 0.7
+    # )
   if (!is.null(surrounding_label)) {
     m_ret <- m_ret +
       tm_shape(coi_l$not_aoi) +

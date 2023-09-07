@@ -24,6 +24,7 @@ install.packages(
 )
 remotes::install_github("dickoa/rhdx")
 remotes::install_github("OCHA-DAP/gghdx")
+# remotes::install_github("r-tmap/tmap@v4") # not going to do this
 # library(here)
 
 # library(gt)
