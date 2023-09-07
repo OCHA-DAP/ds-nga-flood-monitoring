@@ -252,7 +252,8 @@ plot_average_discharge_normalized <- function(df,
     scale_y_continuous(
       breaks = seq(0, ymax_lim, .2),
       limits = c(0, ymax_lim),
-      labels = scales::percent
+      labels = scales::percent,
+      expand = c(0,0)
     ) +
     labs(
       title = plot_title,
