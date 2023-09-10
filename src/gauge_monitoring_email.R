@@ -338,7 +338,7 @@ email_receps_df <- read_csv(email_receps_fp)
 email_to <-  email_receps_df %>% 
   filter(to) %>% 
   pull(email_address)
-email_to <- str_subset(email_to,"^z.*")
+
 # Load in e-mail credentials
 email_creds <- creds_envvar(
   user = Sys.getenv("CHD_DS_EMAIL_USERNAME"),
