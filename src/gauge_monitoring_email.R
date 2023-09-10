@@ -291,7 +291,7 @@ m_basin_alerts <- nga_base_map(
     outer.margins = c(0, 0, 0, 0),
     inner.margins = c(0, 0, 0, 0),
     # legend.position = c("right", "bottom"),
-      legend.position=c(0.76,0.05),
+      legend.position=c(0.75,0.05),
     legend.bg.color = "white",
     legend.text.fontfamily = "Source Sans 3",
     legend.bg.alpha = 1,
@@ -338,7 +338,7 @@ email_receps_df <- read_csv(email_receps_fp)
 email_to <-  email_receps_df %>% 
   filter(to) %>% 
   pull(email_address)
-
+email_to <- str_subset(email_to,"^z.*")
 # Load in e-mail credentials
 email_creds <- creds_envvar(
   user = Sys.getenv("CHD_DS_EMAIL_USERNAME"),
