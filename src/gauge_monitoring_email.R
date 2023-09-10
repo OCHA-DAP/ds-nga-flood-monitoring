@@ -291,7 +291,7 @@ m_basin_alerts <- nga_base_map(
     outer.margins = c(0, 0, 0, 0),
     inner.margins = c(0, 0, 0, 0),
     # legend.position = c("right", "bottom"),
-      legend.position=c(0.70,0.05),
+      legend.position=c(0.72,0.05),
     legend.bg.color = "white",
     legend.text.fontfamily = "Source Sans 3",
     legend.bg.alpha = 1,
