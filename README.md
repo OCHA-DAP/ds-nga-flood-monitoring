@@ -1,6 +1,6 @@
 # Nigeria Flood Monitoring System
 
-This repository contains an automated flood monitoring system for Nigeria that generates email reports based on Google Flood Forecasting data and gauge discharge information. This project serves as the **initial pilot implementation** of Google's flood monitoring system (FloodHub) for operational humanitarian early warning. More information/visualzation of the analyese performed here can be found in this [slide deck](https://docs.google.com/presentation/d/1rB8aOX8XntChfCqIH0wm7Xwf-JXfpQz68sNGk-RifVw/edit?slide=id.g112845f0d8c_1_0#slide=id.g112845f0d8c_1_0)
+This repository contains an automated flood monitoring system for Nigeria that generates email reports based on Google Flood Forecasting data and gauge discharge information. This project serves as the **initial pilot implementation** carried out by OCHA's Centre for Humanitarian Data (CHD) using Google's flood prediction/monitoring system ([floodhub](https://sites.research.google/floods/l/0/0/3)). More information/visualzation of the analyese performed here can be found in this [slide deck](https://docs.google.com/presentation/d/1rB8aOX8XntChfCqIH0wm7Xwf-JXfpQz68sNGk-RifVw/edit?slide=id.g112845f0d8c_1_0#slide=id.g112845f0d8c_1_0)
 
 ## Methodology
 
