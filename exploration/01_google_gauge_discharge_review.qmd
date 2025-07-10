@@ -1,0 +1,307 @@
+---
+title: "Google Gauge Monitoring - Review"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: true
+    self-contained: true
+    embed-resoures: true
+    smooth-scroll: true
+execute:
+  echo: true
+  warning: false
+  message: false
+  eval: true
+  results: "asis"
+  out.width: "100%"
+editor: visual
+project:
+     execute-dir: project
+---
+
+## Intro
+
+This document reviews the gauge discharge (Q) value obtained from Gooles flood forecasting googlesheet. It also looks at the values with respect to the return period values calculated (per gauge) by google and our basin level threshold.
+
+For reference the currently alert level is set at : ≥ 80 % of gauges in a basing breaching the 2 year RP (in the next 7 days)
+
+
+```{r}
+GAUGES_TO_REMOVE <- c(
+  "hybas_1120794570",
+  "hybas_1120741070",
+  "hybas_1120946640",
+  "hybas_1120974450",
+  "hybas_1120981190"
+)
+# install_github("r-tmap/tmap@v4")
+# libs --------------------------------------------------------------------
+# in dedicated monitoring repo should consider setting up w/ {renv}
+# have to load tidyverse packages separate for GHA for some reason
+library(dplyr)
+library(purrr)
+library(readr)
+library(here)
+library(ggplot2)
+library(tidyr) # pivot wider
+library(stringr)
+library(lubridate)
+library(sf)
+library(googlesheets4)
+library(janitor)
+library(tmap)
+library(here)
+library(blastula)
+library(googledrive)
+library(ggtext) # colored title
+library(glue)
+library(gghdx)
+library(rhdx)
+gghdx()
+
+source(here(file.path("R","email_funcs.R")))
+source(here(file.path("src","email","email_utils.R")))
+```
+
+
+```{r gaugeSnapshotCreation, eval = F}
+# Get Data ----------------------------------------------------------------
+
+## Authenticate google APIs ####
+walk(list(drive_auth, gs4_auth), \(f){
+  f(
+    path = Sys.getenv("GFF_JSON")
+  )
+})
+
+drive_dribble <- drive_ls(
+  corpus = "user"
+)
+
+
+## Static Layers ####
+# load layers for mapping from hdx
+L <- hdx_map_viz_layers()
+
+# Basins
+drive_download(
+  as_id("1AsB_Cf9QQb3vkp9ebIFvTPZ5gBYqYRJR"),
+  path = basin_fp <- tempfile(fileext = ".rds")
+)
+
+gdf_basins_poly <- read_rds(basin_fp) %>%
+  filter_basins() %>%
+  # clip to country
+  st_intersection(
+    L$west_central_africa %>%
+      filter(admin0Pcod == "NG")
+  )
+
+## Live Data ####
+### Google forecast Workbook ####
+gauge_df_list <- read_gauge_googlesheets(
+  url = Sys.getenv("GFF_GAUGE_URL")
+)
+
+
+dff <- gauge_df_list %>%
+  keep_at(at = ~ str_detect(.x, "hybas_")) %>%
+  bind_rows() %>%
+  # remove potential duplication issue where two discharge values may get appended to googlesheed w/ same date
+  mutate(
+    date = dmy(date),
+    update_time_utc = ymd_hms(update_time_utc)
+  ) %>%
+  group_by(gauge_id,date) %>%
+  filter(
+    update_time_utc == max(update_time_utc) # get max update time (in case duplicates)
+  ) %>%
+  ungroup() %>%
+  filter(
+    !gauge_id %in% GAUGES_TO_REMOVE
+  ) %>%
+  # add basin informatino to gauge/forecast data
+  left_join(
+    gdf_gauge %>%
+      st_drop_geometry(),
+    by = "gauge_id"
+  ) %>%
+  pivot_longer(
+    cols = matches("discharge"),
+    names_to = "forecast_cat",
+    values_to = "Q"
+  ) %>%
+  mutate(
+    leadtime = replace_na(parse_number(forecast_cat), 0) %>%
+      suppressWarnings(), # don't need the parse_number warning
+    date_predict = date + leadtime,
+    Q_pct_rp2 = Q / x2_years_return_period,
+    gte_2_rp = Q >= x2_years_return_period,
+    gte_5_rp = Q >= x5_years_return_period,
+    gte_20_rp = Q >= x20_years_return_period
+  ) 
+
+
+write_csv(
+  dff,
+  file.path(Sys.getenv("GFH_DATA_DIR"),"inputs","20231113_google_gauge_snapshot.csv") 
+)
+
+```
+
+
+
+```{r}
+dff <- read_csv(file.path(Sys.getenv("GFH_DATA_DIR"),
+                          "inputs","20231113_google_gauge_snapshot.csv") )
+
+dff2 <- dff %>% 
+  group_by(
+    basin_name, gauge_id, date
+  ) %>% 
+  summarise(
+    Q= max(Q),
+    across(
+      .cols = starts_with("x"),
+      .fns = ~unique(.x)
+    ),.groups="drop"
+  ) %>% 
+  mutate(
+    gte_rp2 = Q>x2_years_return_period,
+    gte_rp5 = Q>x5_years_return_period,
+    gte_rp20 = Q>x20_years_return_period
+  ) 
+```
+
+
+## Individual Gauge Discharge
+
+```{r}
+dff2$gauge_id %>% unique() %>% length()
+dff2 %>% 
+  group_by(gauge_id) %>%
+  mutate(
+    flag2 = if_else(any(gte_rp2),"breached 2 year RP","No Breach")
+  ) %>%
+  ungroup() %>%
+  ggplot(
+    aes(x= date, y= Q, group=gauge_id,color=flag2)
+  )+
+  geom_line()+
+  facet_wrap(
+    ~basin_name
+  )
+dff2 %>% 
+  group_by(gauge_id) %>%
+  mutate(
+    flag5 = if_else(any(gte_rp5),"breached 5 year RP","No Breach")
+  ) %>%
+  ungroup() %>%
+  ggplot(
+    aes(x= date, y= Q, group=gauge_id,color=flag5)
+  )+
+  geom_line()+
+  facet_wrap(
+    ~basin_name
+  )
+dff2 %>% 
+  group_by(gauge_id) %>%
+  mutate(
+    flags = case_when(
+      any(gte_rp20)~"breached 20 year RP",
+      any(gte_rp5)~"breached 5 year RP",
+      any(gte_rp2)~"breached 2 year RP",
+      TRUE~"No Breach"
+    )
+  ) %>%
+  ungroup() %>%
+  ggplot(
+    aes(x= date, y= Q, group=gauge_id,color=flags)
+  )+
+  geom_line()+
+  scale_color_manual(values = c(
+    # "breached 20 year RP" = hdx_hex("tomato-hdx"),
+    "breached 5 year RP" = hdx_hex("tomato-hdx"),
+    "breached 2 year RP" = hdx_hex("sapphire-hdx"),
+    "No Breach" = hdx_hex("mint-hdx")
+  ))+
+  facet_wrap(
+    ~basin_name
+  )
+```
+
+## % Gauges Breaching per Basin
+```{r}
+
+dff2_summarised <- dff2 %>% 
+
+  group_by(basin_name,date) %>% 
+  summarise(
+    across(.cols =starts_with("gte"),
+           .fns= list(sum = sum, pct = mean),
+           .names = "rp_{parse_number(col)}_{fn}"),.groups="drop"
+    ) 
+  
+dff2_summarised %>% 
+  ggplot(
+    aes(x= date, y=  rp_2_pct, group=basin_name, color=basin_name)
+  )+
+  geom_line()+
+  scale_y_continuous(labels=scales::label_percent(), limits = c(0,1))+
+  geom_hline(
+    yintercept = 0.8, linetype="dashed", color=hdx_hex("tomato-hdx")
+  )+
+  labs(
+    y= "% gauges breaching 2 year RP",
+    title ="% Gauges breaching 2 year RP per basin over time",
+    caption= "Lower Niger Basin sustained high a high % of gauges breaching 2 year RP (10 out of 15), but never breached 80 % threshold"
+  )+
+  theme(
+    legend.title = element_blank(),
+    axis.title.x=element_blank()
+  )
+
+
+dff2_summarised %>% 
+  ggplot(
+    aes(x= date, y=  rp_5_pct, group=basin_name, color=basin_name)
+  )+
+  geom_line()+
+  # scale_y_continuous(labels=scales::label_percent(), limits = c(0,1))+
+  scale_y_continuous(labels=scales::label_percent())+
+  # geom_hline(
+  #   yintercept = 0.8, linetype="dashed", color=hdx_hex("tomato-hdx")
+  # )+
+  labs(
+    y= "% gauges breaching 2 year RP",
+    title ="% Gauges breaching 2 year RP per basin over time",
+    caption= "Lower Niger Basin sustained high a high % of gauges breaching 5 year RP (10 out of 15), but never breached 80 % threshold"
+  )+
+  theme(
+    legend.title = element_blank(),
+    axis.title.x=element_blank()
+  )
+
+```
+
+## Number Gauges Breaching per Basin
+```{r}
+  dff2_summarised %>% 
+  ggplot(
+    aes(x= date, y=  rp_2_sum, group=basin_name, color=basin_name)
+  )+
+  geom_line()+
+  scale_y_continuous()+
+  labs(
+    y= "% gauges breaching 2 year RP",
+    title ="% Gauges breaching 2 year RP per basin over time",
+    caption= "Lower Niger Basin sustained 10/15 gauges breaching threshold for most of September"
+  )+
+  theme(
+    legend.title = element_blank(),
+    axis.title.x=element_blank()
+  )
+
+
+```
